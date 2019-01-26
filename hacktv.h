@@ -51,7 +51,7 @@ typedef int (*hacktv_rf_close_t)(void *private);
 
 /* Program state */
 typedef struct {
-	
+
 	/* Configuration */
 	char *output_type;
 	char *output;
@@ -65,19 +65,20 @@ typedef struct {
 	int videocrypt;
 	int syster;
 	int filter;
+	char *testtext;
 	uint64_t frequency;
 	int amp;
 	int gain;
 	int file_type;
-	
+
 	/* Video encoder state */
 	vid_t vid;
-	
+
 	/* RF sink interface */
 	void *rf_private;
 	hacktv_rf_write_t rf_write;
 	hacktv_rf_close_t rf_close;
-	
+
 } hacktv_t;
 
 #endif

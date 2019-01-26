@@ -17,6 +17,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 #include "hacktv.h"
 
 /* A small 2-bit hacktv logo */
@@ -66,7 +67,7 @@ static int _av_test_close(void *private)
 	return(HACKTV_OK);
 }
 
-int av_test_open(vid_t *s, int test_pattern_number)
+int av_test_open(vid_t *s, int test_pattern_number, char *testtext)
 {
 	uint32_t const bars[8] = {
 		0x000000,
@@ -82,6 +83,7 @@ int av_test_open(vid_t *s, int test_pattern_number)
 	int c, x, y;
 	double d;
 	int16_t l;
+	int testtextlen, width, height, i;
 
 	av = calloc(1, sizeof(av_test_t));
 	if(!av)
@@ -134,16 +136,55 @@ int av_test_open(vid_t *s, int test_pattern_number)
 	}
 
 	/* Overlay the logo */
-	x = s->active_width / 2;
-	y = s->conf.active_lines / 10;
-
-	for(x = 0; x < LOGO_WIDTH * LOGO_SCALE; x++)
+	if(testtext == NULL)
 	{
-		for(y = 0; y < LOGO_HEIGHT * LOGO_SCALE; y++)
-		{
-			c = _logo[y / LOGO_SCALE * LOGO_WIDTH + x / LOGO_SCALE] == ' ' ? 0x000000 : 0xFFFFFF;
+		x = s->active_width / 2;
+		y = s->conf.active_lines / 10;
 
-			av->video[(s->conf.active_lines / 10 + y) * s->active_width + ((s->active_width - LOGO_WIDTH * LOGO_SCALE) / 2) + x] = c;
+		for(x = 0; x < LOGO_WIDTH * LOGO_SCALE; x++)
+		{
+			for(y = 0; y < LOGO_HEIGHT * LOGO_SCALE; y++)
+			{
+				c = _logo[y / LOGO_SCALE * LOGO_WIDTH + x / LOGO_SCALE] == ' ' ? 0x000000 : 0xFFFFFF;
+
+				av->video[(s->conf.active_lines / 10 + y) * s->active_width + ((s->active_width - LOGO_WIDTH * LOGO_SCALE) / 2) + x] = c;
+			}
+		}
+	}
+	else
+	{
+		testtextlen = strnlen(testtext, 100000);
+		width = 0;
+		height = 0;
+		for(i = 0; testtext[i] && i < testtextlen; ++i)
+		{
+			if(testtext[i] == '\n')
+			{
+				height++;
+			}
+		}
+
+		height += 1; /* Explicitly add since there is no \n on last line */
+		while(testtext[width] && testtext[width++] != '\n');
+
+		/* Replace newlines with spaces */
+		i = 0;
+		while(testtext[i])
+		{
+			if(testtext[i] == '\n')
+				testtext[i] = ' ';
+			++i;
+		}
+		testtext[testtextlen] = ' ';
+
+		for(x = 0; x < width * LOGO_SCALE; x++)
+		{
+			for(y = 0; y < height * LOGO_SCALE; y++)
+			{
+				c = testtext[y / LOGO_SCALE * width + x / LOGO_SCALE] == ' ' ? 0x000000 : 0xFFFFFF;
+
+				av->video[(s->conf.active_lines / 10 + y) * s->active_width + ((s->active_width - width * LOGO_SCALE) / 2) + x] = c;
+			}
 		}
 	}
 

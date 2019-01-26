@@ -82,6 +82,8 @@ static void print_usage(void)
 		"      --videocrypt               Enable Videocrypt I scrambling. (PAL only)\n"
 		"      --syster                   Enable Nagravision Syster scambling. (PAL only)\n"
 		"      --filter                   Enable experimental VSB modulation filter.\n"
+		"      --testtext                 Draw a custom test string formatted with figlet.\n"
+		"                                 Example: test --testtext \"`figlet -f banner3 test`\"\n"
 		"\n"
 		"Input options\n"
 		"\n"
@@ -205,6 +207,7 @@ static void print_usage(void)
 #define _OPT_VIDEOCRYPT 1002
 #define _OPT_SYSTER     1003
 #define _OPT_FILTER     1004
+#define _OPT_TESTTEXT	1005
 
 int main(int argc, char *argv[])
 {
@@ -222,6 +225,7 @@ int main(int argc, char *argv[])
 		{ "videocrypt", no_argument,       0, _OPT_VIDEOCRYPT },
 		{ "syster",     no_argument,       0, _OPT_SYSTER },
 		{ "filter",     no_argument,       0, _OPT_FILTER },
+		{ "testtext",   required_argument, 0, _OPT_TESTTEXT },
 		{ "frequency",  required_argument, 0, 'f' },
 		{ "amp",        no_argument,       0, 'a' },
 		{ "gain",       required_argument, 0, 'x' },
@@ -251,6 +255,7 @@ int main(int argc, char *argv[])
 	s.videocrypt = 0;
 	s.syster = 0;
 	s.filter = 0;
+	s.testtext = NULL;
 	s.frequency = 0;
 	s.amp = 0;
 	s.gain = 0;
@@ -348,6 +353,11 @@ int main(int argc, char *argv[])
 
 		case _OPT_FILTER: /* --filter */
 			s.filter = 1;
+			break;
+
+		case _OPT_TESTTEXT: /* --testtext */
+			free(s.testtext);
+			s.testtext = strdup(optarg);
 			break;
 
 		case 'f': /* -f, --frequency <value> */
@@ -546,17 +556,17 @@ int main(int argc, char *argv[])
 			{
 				if(sub == NULL)
 				{
-					r = av_test_open(&s.vid, 0);
+					r = av_test_open(&s.vid, 0, s.testtext);
 				}
 				else
 				{
 					if(strncmp(sub, "checkerboard", l) == 0)
 					{
-						r = av_test_open(&s.vid, 1);
+						r = av_test_open(&s.vid, 1, s.testtext);
 					}
 					else
 					{
-						r = av_test_open(&s.vid, 0);
+						r = av_test_open(&s.vid, 0, s.testtext);
 					}
 				}
 			}
